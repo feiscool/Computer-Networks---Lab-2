@@ -27,13 +27,21 @@ void *get_in_addr(struct sockaddr *sa) {
 
 int main(int argc, char *argv[]) {
 
+	// Stuff already added by Beej
     int sockfd, numbytes, rv, masterPortNumber;
-    char buf[MAXDATASIZE];
+    char buffer[MAXDATASIZE];
     struct addrinfo hints, *servinfo, *p;	// "hints" is a struct of the addrinfo type 
     char s[INET6_ADDRSTRLEN];
     
+    // Constants 
     const uint8_t GID = 1;	
     const uint16_t magicNumber = 0x1234;  
+    
+    // Variables to be received from the master 
+    uint8_t received_GID;
+    uint16_t received_MagicNumber;
+    uint8_t received_myRID;
+    uint32_t received_nextSlaveIP;
     
     // Packed struct that will be sent as the data in a packet. A packed struct
     // is used as it won't contain any "padding" added by the compiler
@@ -121,7 +129,7 @@ int main(int argc, char *argv[]) {
     }
     
     // Receive the response from the master 
-    if ((numbytes = recv(sockfd, buf, MAXDATASIZE - 1, 0)) == -1) {
+    if ((numbytes = recv(sockfd, buffer, MAXDATASIZE - 1, 0)) == -1) {
 	    perror("Slave: Error - recv() \n");
 	    exit(1);
 	}
@@ -132,9 +140,21 @@ int main(int argc, char *argv[]) {
 		exit(1);
 	}
 
-	buf[numbytes] = '\0';		// Mark the end of the buffer (for printing)
+	buffer[numbytes] = '\0';		// Mark the end of the buffer (for printing)
 
-	printf("Slave: Received '%s' \n", buf);
+	printf("Slave: Received \"%s\" from Master \n", buffer);
+	
+	// Get the data from the buffer 
+	received_GID = *(uint8_t *)(buffer);
+    received_MagicNumber = *(uint16_t *)(buffer + 1);
+    received_myRID = *(uint8_t *)(buffer + 3);
+    received_nextSlaveIP = *(uint32_t *)(buffer + 4);
+	
+	printf("\nSlave: Contents received from Master specifically: \n");
+	printf("Slave: GID = %d \n", received_GID);
+	printf("Slave: Magic number = %d \n", received_MagicNumber);
+	printf("Slave: My RID = %d \n", received_myRID);
+	printf("Slave: Next slave IP = %d \n", received_nextSlaveIP);
     
     freeaddrinfo(servinfo);		// Frees up the linked list pointed to by servinfo 
     close(sockfd);				// Close the socket that we were using 
