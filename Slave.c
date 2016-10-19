@@ -136,17 +136,20 @@ int main(int argc, char *argv[]) {
 	
 	// Ensure the return packet is the correct size (8 bytes) 
 	if (numbytes != 8) {
-		perror("Slave: Error - incorrect response packet size \n");
-		exit(1);
+		//perror("Slave: Error - incorrect response packet size \n");
+		//exit(1);
+		printf("Slave: Number of bytes received = %d \n", numbytes);
 	}
 
 	buffer[numbytes] = '\0';		// Mark the end of the buffer (for printing)
 
 	printf("Slave: Received \"%s\" from Master \n", buffer);
 	
-	// Get the data from the buffer 
-	received_GID = *(uint8_t *)(buffer);
-    received_MagicNumber = *(uint16_t *)(buffer + 1);
+	// Get the data from the buffer. Note: The second parentheses is where the data
+	// is to begin to be parsed from. It will stop automatically based on the size of
+	// the type that is specified 
+	received_GID = *(uint8_t *)(buffer);		
+	received_MagicNumber = *(uint16_t *)(buffer + 1);
     received_myRID = *(uint8_t *)(buffer + 3);
     received_nextSlaveIP = *(uint32_t *)(buffer + 4);
 	
