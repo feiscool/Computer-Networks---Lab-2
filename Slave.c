@@ -50,7 +50,7 @@ int main(int argc, char *argv[]) {
     
     masterPortNumber = strtol(argv[2], NULL, 10);
     
-    // Ensure the port number is valid 
+    // Ensure the port number is valid (just for kicks) 
     if (masterPortNumber < 0 || masterPortNumber > 65535) {
     	fprintf(stderr,"Slave: Error - invalid port number given \n");
         exit(1);
@@ -65,7 +65,7 @@ int main(int argc, char *argv[]) {
 	// Creates a linked list of addrinfo structs, which are pointed to by servinfo. These
 	// structs contain the address information for the server that we are connecting to
     if ((rv = getaddrinfo(argv[1], argv[2], &hints, &servinfo)) != 0) {
-        fprintf(stderr, "Slave: Error - getaddrinfo(): %s \n", gai_strerror(rv));
+        fprintf(stderr, "Slave: Error - getaddrinfo(): => %s \n", gai_strerror(rv));
         return 1;
     }
 
@@ -104,6 +104,12 @@ int main(int argc, char *argv[]) {
     inet_ntop(p -> ai_family, get_in_addr((struct sockaddr *)p -> ai_addr), s, sizeof s);
     printf("Slave: Connecting to %s \n", s);
 
+	/* 
+	 *
+	 * JOIN REQUEST is below
+	 *
+	 */
+
 	// Construct the packet to be sent 
     struct packed_message packet = {GID, magicNumber};
     
@@ -114,8 +120,24 @@ int main(int argc, char *argv[]) {
 		exit(1);
     }
     
+    // Receive the response from the master 
+    if ((numbytes = recv(sockfd, buf, MAXDATASIZE - 1, 0)) == -1) {
+	    perror("Slave: Error - recv() \n");
+	    exit(1);
+	}
+	
+	// Ensure the return packet is the correct size (8 bytes) 
+	if (numbytes != 8) {
+		perror("Slave: Error - incorrect response packet size \n");
+		exit(1);
+	}
+
+	buf[numbytes] = '\0';		// Mark the end of the buffer (for printing)
+
+	printf("Slave: Received '%s' \n", buf);
+    
     freeaddrinfo(servinfo);		// Frees up the linked list pointed to by servinfo 
-    close(sockfd);				// Close the socket we were using 
+    close(sockfd);				// Close the socket that we were using 
     
     return 0;
 }
