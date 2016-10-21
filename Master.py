@@ -3,8 +3,6 @@ import sys
 import string
 import struct
 import binascii
-reload(sys)  
-sys.setdefaultencoding('utf8')
 
 # Create a TCP/IP socket
 myRID = 0
@@ -53,11 +51,15 @@ while True:
         print 'Master: magicNumber =', magicNumber
 
         #print 'nextSlaveIP text to binary', binascii.hexlify(socket.inet_aton(nextSlaveIP))
-        nextSlaveIPArray = bytearray()
-        nextSlaveIPArray.extend(nextSlaveIP)
-        print nextSlaveIPArray
+        nextSlaveIPArray = bytearray.fromhex(binascii.hexlify(nextSlaveIP))
+        tempArray = nextSlaveIP.split(".")
+        print (tempArray[0])
+        IP_part1 = bin(int(tempArray[0]))
+        IP_part2 = bin(int(tempArray[1]))
+        IP_part3 = bin(int(tempArray[2]))
+        IP_part4 = bin(int(tempArray[3]))
 
-        reply = struct.pack("=bhb", myGID, magicNumber, myRID, nextSlaveIPArray)
+        reply = struct.pack("=bhbBBBB", myGID, magicNumber, myRID, IP_part1, IP_part2, IP_part3, IP_part4)
 
         if reply:
             print 'Master: Sending data back to the client'
