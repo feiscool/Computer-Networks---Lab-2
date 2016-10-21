@@ -54,12 +54,12 @@ while True:
         nextSlaveIPArray = bytearray.fromhex(binascii.hexlify(nextSlaveIP))
         tempArray = nextSlaveIP.split(".")
         print (tempArray[0])
-        IP_part1 = bin(int(tempArray[0]))
-        IP_part2 = bin(int(tempArray[1]))
-        IP_part3 = bin(int(tempArray[2]))
-        IP_part4 = bin(int(tempArray[3]))
+        IP_part1 = int(tempArray[0])
+        IP_part2 = int(tempArray[1])
+        IP_part3 = int(tempArray[2])
+        IP_part4 = int(tempArray[3])
 
-        reply = struct.pack("=bhbBBBB", myGID, magicNumber, myRID, IP_part1, IP_part2, IP_part3, IP_part4)
+        reply = struct.pack("!BhBBBBB", myGID, magicNumber, myRID, IP_part1, IP_part2, IP_part3, IP_part4)
 
         if reply:
             print 'Master: Sending data back to the client'
