@@ -39,13 +39,13 @@ while True:
         data = connection.recv(16)
         dataCharArray = list(binascii.hexlify(data))
         #GIDReceived is the GID of the creator or the slave
-        GIDReceived_String = str(dataCharArray[0]) + str(dataCharArray[1])
+        GIDReceived = str(dataCharArray[0]) + str(dataCharArray[1])
         #magicNumber is used by the nodes to test the validity of messages using this protocol
         #ignore the request if the message is not valid (different from 3 bytes or not containing the magic number).
-        magicNumber_String = str(dataCharArray[4]) + str(dataCharArray[5]) + str(dataCharArray[2]) + str(dataCharArray[3])
+        magicNumber = str(dataCharArray[2]) + str(dataCharArray[3]) + str(dataCharArray[4]) + str(dataCharArray[5]) 
 
-        GIDReceived = int(GIDReceived_String)
-        magicNumber = int(magicNumber_String)
+		GIDReceived = int(GIDReceived)
+		magicNumber = int(magicNumber)	
 
         print 'Master: GIDReceived =', GIDReceived
         print 'Master: magicNumber =', magicNumber
@@ -53,7 +53,7 @@ while True:
         #print 'nextSlaveIP text to binary', binascii.hexlify(socket.inet_aton(nextSlaveIP))
         nextSlaveIPArray = bytearray.fromhex(binascii.hexlify(nextSlaveIP))
         tempArray = nextSlaveIP.split(".")
-        print (tempArray[0])
+        #print (tempArray[0])
         IP_part1 = int(tempArray[0])
         IP_part2 = int(tempArray[1])
         IP_part3 = int(tempArray[2])
