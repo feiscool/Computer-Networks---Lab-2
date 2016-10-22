@@ -36,12 +36,15 @@ int main(int argc, char *argv[]) {
     // Constants 
     const uint8_t GID = 1;	
     const uint16_t magicNumber = 0x1234;  
+    const uint16_t magicNumber_BigE = htons(magicNumber);		// Convert to Big Endian 
     
     // Variables to be received from the master 
     uint8_t received_GID;
     uint16_t received_MagicNumber;
     uint8_t received_myRID;
     uint32_t received_nextSlaveIP;
+    uint8_t myRID;
+    uint32_t nextSlaveIP;
     
     // Packed struct that will be sent as the data in a packet. A packed struct
     // is used as it won't contain any "padding" added by the compiler
@@ -119,7 +122,7 @@ int main(int argc, char *argv[]) {
 	 */
 
 	// Construct the packet to be sent 
-    struct packed_message packet = {GID, magicNumber};
+    struct packed_message packet = {GID, magicNumber_BigE};
     
     // Attempt to send the packet to the master 
     if (send(sockfd, (void *)&packet, sizeof(packet), 0) == -1) {
@@ -143,7 +146,7 @@ int main(int argc, char *argv[]) {
 
 	buffer[numbytes] = '\0';		// Mark the end of the buffer (for printing)
 
-	printf("Slave: Received \"%s\" from Master \n", buffer);
+	printf("Slave: Received \"%s\" from Master \n", buffer);	// REMOVE
 	
 	// Get the data from the buffer. Note: The second parentheses is where the data
 	// is to begin to be parsed from. It will stop automatically based on the size of
@@ -152,10 +155,15 @@ int main(int argc, char *argv[]) {
 	received_MagicNumber = *(uint16_t *)(buffer + 1);
     received_myRID = *(uint8_t *)(buffer + 3);
     received_nextSlaveIP = *(uint32_t *)(buffer + 4);
+    
+    myRID = received_myRID;
+    nextSlaveIP = received_nextSlaveIP; 
+    
+    received_MagicNumber = ntohs(received_MagicNumber); 
 	
-	printf("\nSlave: Contents received from Master specifically: \n");
-	printf("Slave: GID = %d \n", received_GID);
-	printf("Slave: Magic number = %d \n", received_MagicNumber);
+	printf("\nSlave: Contents received from Master specifically: \n");	// REMOVE
+	printf("Slave: GID of Master = %d \n", received_GID);
+	printf("Slave: Magic number = %d \n", received_MagicNumber);	// REMOVE
 	printf("Slave: My RID = %d \n", received_myRID);
 	printf("Slave: Next slave IP = %d \n", received_nextSlaveIP);
     
