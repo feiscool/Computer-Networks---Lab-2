@@ -7,10 +7,12 @@ import binascii
 # Create a TCP/IP socket
 myRID = 0
 myGID = 1
+magicNumber = 0x1234 
+
 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-#both IPaddress and nextSlaveIP are initially set to the master IP
-IPaddress = socket.gethostbyname(socket.gethostname())
-nextSlaveIP = IPaddress
+
+myIPaddress = socket.gethostbyname(socket.gethostname())
+
 #get port number from argv
 portNum = int(sys.argv[1])
 # Bind the socket to the port
@@ -22,7 +24,7 @@ sock.listen(1)
 
 while True:
     # Wait for a connection
-    print 'Master: Waiting for a connection'
+    # print 'Master: Waiting for a connection'
     connection, client_address = sock.accept()
     try:    # Receive the data in small chunks and retransmit it
         print 'Master: Received connection from', client_address
@@ -33,8 +35,7 @@ while True:
         print 'Master: Port number of slave =', client_Port
 
         #IPaddress(master IP) is assigned to the newly received node IP
-        nextSlaveIP = IPaddress
-        IPaddress = client_IP
+        nextSlaveIP = myIPaddress
 
         data = connection.recv(16)
         dataCharArray = list(binascii.hexlify(data))
@@ -42,24 +43,21 @@ while True:
         GIDReceived = str(dataCharArray[0]) + str(dataCharArray[1])
         #magicNumber is used by the nodes to test the validity of messages using this protocol
         #ignore the request if the message is not valid (different from 3 bytes or not containing the magic number).
-        magicNumber = str(dataCharArray[2]) + str(dataCharArray[3]) + str(dataCharArray[4]) + str(dataCharArray[5]) 
+        received_magicNumber = str(dataCharArray[2]) + str(dataCharArray[3]) + str(dataCharArray[4]) + str(dataCharArray[5]) 
 
-		GIDReceived = int(GIDReceived)
-		magicNumber = int(magicNumber)	
+	GIDReceived = int(GIDReceived)
+	received_magicNumber = int(received_magicNumber, 16)	
 
-        print 'Master: GIDReceived =', GIDReceived
-        print 'Master: magicNumber =', magicNumber
+	print 'Master: GIDReceived =', GIDReceived
+        print 'Master: magicNumber = 0x%x' % received_magicNumber
 
-        #print 'nextSlaveIP text to binary', binascii.hexlify(socket.inet_aton(nextSlaveIP))
-        nextSlaveIPArray = bytearray.fromhex(binascii.hexlify(nextSlaveIP))
-        tempArray = nextSlaveIP.split(".")
-        #print (tempArray[0])
-        IP_part1 = int(tempArray[0])
-        IP_part2 = int(tempArray[1])
-        IP_part3 = int(tempArray[2])
-        IP_part4 = int(tempArray[3])
+	if received_magicNumber != magicNumber:
+		print 'Master: Error - invalid magic number received from Slave'
+		exit(1)  
 
-        reply = struct.pack("!BhBBBBB", myGID, magicNumber, myRID, IP_part1, IP_part2, IP_part3, IP_part4)
+	packed_clientIP = struct.unpack("I", socket.inet_aton(nextSlaveIP))[0] 
+
+        reply = struct.pack("!BHBI", myGID, magicNumber, myRID, packed_clientIP)
 
         if reply:
             print 'Master: Sending data back to the client'

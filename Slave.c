@@ -46,6 +46,8 @@ int main(int argc, char *argv[]) {
     uint8_t myRID;
     uint32_t nextSlaveIP;
     
+    char nextSlaveIP_String[INET_ADDRSTRLEN];
+    
     // Packed struct that will be sent as the data in a packet. A packed struct
     // is used as it won't contain any "padding" added by the compiler
     struct packed_message {   
@@ -76,7 +78,7 @@ int main(int argc, char *argv[]) {
 	// Creates a linked list of addrinfo structs, which are pointed to by servinfo. These
 	// structs contain the address information for the server that we are connecting to
     if ((rv = getaddrinfo(argv[1], argv[2], &hints, &servinfo)) != 0) {
-        fprintf(stderr, "Slave: Error - getaddrinfo(): => %s \n", gai_strerror(rv));
+        fprintf(stderr, "Slave: Error - getaddrinfo() => %s \n", gai_strerror(rv));
         return 1;
     }
 
@@ -137,36 +139,42 @@ int main(int argc, char *argv[]) {
 	    exit(1);
 	}
 	
+	printf("Slave: Number of bytes received = %d \n", numbytes);	// REMOVE 
+	
 	// Ensure the return packet is the correct size (8 bytes) 
 	if (numbytes != 8) {
-		//perror("Slave: Error - incorrect response packet size \n");
-		//exit(1);
-		printf("Slave: Number of bytes received = %d \n", numbytes);
+		perror("Slave: Error - incorrect response packet size \n");
+		exit(1);
 	}
 
-	buffer[numbytes] = '\0';		// Mark the end of the buffer (for printing)
-
-	printf("Slave: Received \"%s\" from Master \n", buffer);	// REMOVE
+	buffer[numbytes] = '\0';		// Mark the end of the buffer
 	
 	// Get the data from the buffer. Note: The second parentheses is where the data
 	// is to begin to be parsed from. It will stop automatically based on the size of
 	// the type that is specified 
 	received_GID = *(uint8_t *)(buffer);		
 	received_MagicNumber = *(uint16_t *)(buffer + 1);
-    received_myRID = *(uint8_t *)(buffer + 3);
-    received_nextSlaveIP = *(uint32_t *)(buffer + 4);
+    myRID = *(uint8_t *)(buffer + 3);
+    nextSlaveIP = *(uint32_t *)(buffer + 4);
     
-    myRID = received_myRID;
-    nextSlaveIP = received_nextSlaveIP; 
+    // Convert the received values larger than a byte to host byte order (Little Endian)
+    received_MagicNumber = ntohs(received_MagicNumber);		
+    nextSlaveIP = ntohl(nextSlaveIP);
     
-    received_MagicNumber = ntohs(received_MagicNumber); 
+    // Convert the received next slave's IP Address to human readable form 
+    inet_ntop(AF_INET, &(nextSlaveIP), nextSlaveIP_String, INET_ADDRSTRLEN);
+    
+    // Ensure that the magic number sent from the Master is valid 
+    if (received_MagicNumber != magicNumber) {
+    	perror("Slave: Error - invalid magic number received from Master \n");
+		exit(1);
+    }
 	
-	printf("\nSlave: Contents received from Master specifically: \n");	// REMOVE
 	printf("Slave: GID of Master = %d \n", received_GID);
-	printf("Slave: Magic number = %d \n", received_MagicNumber);	// REMOVE
+	printf("Slave: Magic number = 0x%x \n", received_MagicNumber);	// REMOVE
 	printf("Slave: My RID = %d \n", received_myRID);
-	printf("Slave: Next slave IP = %d \n", received_nextSlaveIP);
-    
+	printf("Slave: Next Slave IP Address = %s \n", nextSlaveIP_String);
+	
     freeaddrinfo(servinfo);		// Frees up the linked list pointed to by servinfo 
     close(sockfd);				// Close the socket that we were using 
     
