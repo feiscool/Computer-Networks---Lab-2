@@ -29,12 +29,12 @@ while True:
     # print 'Master: Waiting for a connection'
     connection, client_address = sock.accept()
     try:    # Receive the data in small chunks and retransmit it
-        print 'Master: Received connection from', client_address
+        print 'Master: Received connection from', client_address[0]
 
         client_IP = client_address[0]
         client_Port = client_address[1]
-        print 'Master: IP address of slave =', client_IP
-        print 'Master: Port number of slave =', client_Port
+        # print 'Master: IP address of slave =', client_IP
+        # print 'Master: Port number of slave =', client_Port
 
         data = connection.recv(16)
         dataCharArray = list(binascii.hexlify(data))
@@ -48,11 +48,11 @@ while True:
         received_magic_number = int(received_magic_number, 16)
 
         print 'Master: GID_received =', GID_received
-        print 'Master: magic_number = 0x%x' % received_magic_number
+        # print 'Master: magic_number = 0x%x' % received_magic_number
 
         if received_magic_number != magic_number:
             print 'Master: Error - invalid magic number received from Slave'
-            exit(1)
+            # exit(1)
 
         #master has received and unpacked the request from the slave,
         #so we do the following:
@@ -67,7 +67,7 @@ while True:
         if reply:
             print 'Master: Sending data back to the client'
             connection.sendall(reply)
-            print 'Master: Sent %s bytes back to %s' % (len(reply), client_IP)
+            # print 'Master: Sent %s bytes back to %s' % (len(reply), client_IP)
 
     finally:
         # Clean up the connection
