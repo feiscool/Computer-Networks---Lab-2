@@ -47,7 +47,7 @@ while True:
         GID_received = int(GID_received)
         received_magic_number = int(received_magic_number, 16)
 
-        print 'Master: GID_received =', GID_received
+        # print 'Master: GID_received =', GID_received
         # print 'Master: magic_number = 0x%x' % received_magic_number
 
         if received_magic_number != magic_number:
