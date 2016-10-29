@@ -5,8 +5,8 @@ import struct
 import binascii
 
 # Create a TCP/IP socket
-myRID = 0
-myGID = 1
+myRID = 1
+myGID = 0
 magic_number = 0x1234
 packed_clientIP = -1
 

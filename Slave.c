@@ -43,7 +43,6 @@ int main(int argc, char *argv[]) {
     uint16_t received_MagicNumber;
     uint8_t received_myRID;
     uint32_t received_nextSlaveIP;
-    uint8_t myRID;
     uint32_t nextSlaveIP;
     
     char nextSlaveIP_String[INET_ADDRSTRLEN];
@@ -154,7 +153,7 @@ int main(int argc, char *argv[]) {
 	// the type that is specified 
 	received_GID = *(uint8_t *)(buffer);		
 	received_MagicNumber = *(uint16_t *)(buffer + 1);
-    myRID = *(uint8_t *)(buffer + 3);
+    received_myRID = *(uint8_t *)(buffer + 3);
     nextSlaveIP = *(uint32_t *)(buffer + 4);
     
     // Convert the received values larger than a byte to host byte order (Little Endian)
