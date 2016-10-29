@@ -65,7 +65,7 @@ while True:
         myRID = myRID + 1
 
         if reply:
-            print 'Master: Sending data back to the client'
+            print 'Master: Sending response back to Slave'
             connection.sendall(reply)
             # print 'Master: Sent %s bytes back to %s' % (len(reply), client_IP)
 
