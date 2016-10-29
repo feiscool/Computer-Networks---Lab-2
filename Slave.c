@@ -172,7 +172,7 @@ int main(int argc, char *argv[]) {
 	
 	// Display the contents of the response packet 
 	printf("Slave: GID of Master = %d \n", received_GID);
-	printf("Slave: My RID = %d \n", received_myRID);
+	printf("Slave: My RID = %d \n", myRID);
 	printf("Slave: Next Slave's IP Address = %s \n", nextSlaveIP_String);
 	
     freeaddrinfo(servinfo);		// Frees up the linked list pointed to by servinfo 
