@@ -5,7 +5,8 @@ import struct
 import binascii
 
 # Create a TCP/IP socket
-myRID = 1
+myRID = 0
+slaveRID = 1
 myGID = 1
 magic_number = 0x1234
 packed_clientIP = -1
@@ -59,10 +60,10 @@ while True:
         #---send myIPaddress to slave
         #---set myIPaddress to the newly received IP address
         packed_clientIP = struct.unpack("I", socket.inet_aton(myIPaddress))[0]
-        reply = struct.pack("!BHBI", myGID, magic_number, myRID, packed_clientIP)
+        reply = struct.pack("!BHBI", myGID, magic_number, slaveRID, packed_clientIP)
         nextSlaveIP = myIPaddress
         myIPaddress = client_IP
-        myRID = myRID + 1
+        slaveRID = slaveRID + 1
 
         if reply:
             print 'Master: Sending response back to Slave'
