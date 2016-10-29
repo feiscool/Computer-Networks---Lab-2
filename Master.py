@@ -14,7 +14,7 @@ packed_clientIP = -1
 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 #initially, both IP address variables are set to hostname
 #because the master is the only node in the ring
-myIPaddress = nextSlaveIP = socket.gethostbyname(socket.gethostname())
+nextSlaveIP = myIPaddress = socket.gethostbyname(socket.gethostname())
 
 #get port number from argv
 portNum = int(sys.argv[1])
@@ -28,12 +28,12 @@ sock.listen(1)
 while True:
     # Wait for a connection
     # print 'Master: Waiting for a connection'
-    connection, client_address = sock.accept()
+    connection, slave_address = sock.accept()
     try:    # Receive the data in small chunks and retransmit it
-        print 'Master: Received connection from', client_address[0]
+        print 'Master: Received connection from', slave_address[0]
 
-        client_IP = client_address[0]
-        client_Port = client_address[1]
+        slave_IP = slave_address[0]
+        slave_Port = slave_address[1]
         # print 'Master: IP address of slave =', client_IP
         # print 'Master: Port number of slave =', client_Port
 
@@ -55,15 +55,14 @@ while True:
             print 'Master: Error - invalid magic number received from Slave'
             # exit(1)
 
-        #master has received and unpacked the request from the slave,
-        #so we do the following:
-        #---send myIPaddress to slave
-        #---set myIPaddress to the newly received IP address
-        packed_clientIP = struct.unpack("I", socket.inet_aton(myIPaddress))[0]
-        reply = struct.pack("!BHBI", myGID, magic_number, slaveRID, packed_clientIP)
-        nextSlaveIP = myIPaddress
-        myIPaddress = client_IP
-        slaveRID = slaveRID + 1
+        # Convert nextSlaveIP to integer format for sending
+        packed_nextSlaveIP = struct.unpack("I", socket.inet_aton(nextSlaveIP))[0]
+        
+        # Send the response packet 
+        reply = struct.pack("!BHBI", myGID, magic_number, slaveRID, packed_nextSlaveIP)
+        
+        nextSlaveIP = slave_IP      # Next slave is the slave that just joined 
+        slaveRID = slaveRID + 1     # Increment slaveRID for the next slave
 
         if reply:
             print 'Master: Sending response back to Slave'
